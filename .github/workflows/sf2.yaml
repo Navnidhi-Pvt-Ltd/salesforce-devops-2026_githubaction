@@ -5,7 +5,7 @@ on:
   push:
 jobs:
   setup-salesforce:
-      name: "Setup Salesforce Environment"
+      name: "Setup Salesforce Environment 2"
       runs-on: ubuntu-latest
 
       steps:
