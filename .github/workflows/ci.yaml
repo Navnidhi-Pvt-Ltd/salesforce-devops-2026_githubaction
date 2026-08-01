@@ -12,9 +12,6 @@ jobs:
       - name: Print
         run: echo "This is my first pipeline"
       - name: Info
-        run: | 
-          - echo "This is my first line"
-          - echo "This is my second line"
-          - echo "This is my third line"
+        run: echo "This is my first line"
           
         
