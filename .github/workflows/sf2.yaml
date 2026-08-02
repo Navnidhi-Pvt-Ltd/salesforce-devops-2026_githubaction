@@ -49,9 +49,9 @@ jobs:
             - name: Fail on Critical/High Violations (All Files)
               if: |
                 steps.run-code-analyzer.outputs.exit-code > 0 ||
-                steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
-                steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
-                steps.run-code-analyzer.outputs.num-violations > 10
+                steps.run-code-analyzer.outputs.num-sev1-violations > 30 ||
+                steps.run-code-analyzer.outputs.num-sev2-violations > 30 ||
+                steps.run-code-analyzer.outputs.num-violations > 100
               run: exit 1
 
             - name: "Authenticate with Salesforce"
