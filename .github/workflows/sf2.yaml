@@ -25,3 +25,7 @@ jobs:
                   sf plugins install code-analyzer
             - name: "Authenticate with Salesforce"
               run: sf org login sfdx-url --sfdx-url-file tmp/authFIle.txt --set-default --alias TRIAL_PROD_ORG
+            - name: "Deploy to Salesforce org"
+              run: sf project deploy start --source-dir force-app/main/default --target-org TRIAL_PROD_ORG --wait 45
+            - name: "Assign Permission Set"
+              run: sf org assign permset --name Onboarding_Manager --on-behalf-of TRIAL_PROD_ORG --target-org TRIAL_PROD_ORG --wait 5
