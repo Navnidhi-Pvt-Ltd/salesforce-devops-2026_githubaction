@@ -14,8 +14,7 @@ jobs:
               with:
                 fetch-depth: 0  
             - name: 'Github Context Variables'
-              run: | 
-                echo "${{toJSON(github)}}"          
+              run: echo "${{toJSON(github)}}"          
   # PREREQUISITES - Only needed if the runner doesn't already satisfy these requirements.
             - name: Ensure node v20.9.0 or greater
               uses: actions/setup-node@v5
