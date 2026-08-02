@@ -56,6 +56,17 @@ jobs:
                   sf --help    
                   sf plugins install code-analyzer
 
+            - name: "Authenticate with Salesforce"
+              env: 
+                PROD_SFDX_AUTH_URL: ${{secrets.PROD_SFDX_AUTH_URL}}
+                SFDX_AUTH_FILE_PATH: ${{secrets.SFDX_AUTH_FILE_PATH}} 
+              run: |
+                # Read the secret
+                echo ${{env.PROD_SFDX_AUTH_URL}}
+                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
+                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
+                rm ${{env.SFDX_AUTH_FILE_PATH}}
+
             - name: Run Salesforce Code Analyzer
               id: run-code-analyzer
               uses: forcedotcom/run-code-analyzer@v2
@@ -64,6 +75,9 @@ jobs:
                 results-artifact-name: salesforce-code-analyzer-results
                 github-token: ${{ github.token }}
 
+            - name: "Deploy to Salesforce org"
+              run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
             - name: Fail on Critical/High Violations (All Files)
               if: |
                 steps.run-code-analyzer.outputs.exit-code > 0 ||
@@ -71,10 +85,6 @@ jobs:
                 steps.run-code-analyzer.outputs.num-sev2-violations > 30 
               run: exit 1
 
-            - name: "Authenticate with Salesforce"
-              run: sf org login sfdx-url --sfdx-url-file tmp/authFIle.txt --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
-            - name: "Deploy to Salesforce org"
-              run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
 #            - name: "Assign Permission Set"
 #             run: sf org assign permset --name Onboarding_Manager --on-behalf-of TRIAL_PROD_ORG --target-org TRIAL_PROD_ORG
 
