@@ -6,8 +6,6 @@ on:
     paths: 
       - 'force-app/**'
     branches:
-      - hotfix/**
-      - release/**
       - UAT
       - integration
       - feature/**
@@ -20,6 +18,8 @@ on:
     branches:
       - UAT
       - main
+      - hotfix/**
+      - release/**
 
 env:
   ORG_DEFAULT_ALIAS: 'PROD_ORG'
