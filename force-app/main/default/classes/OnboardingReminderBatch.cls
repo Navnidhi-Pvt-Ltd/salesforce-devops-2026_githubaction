@@ -10,6 +10,7 @@
  *              across chunks and visible in the finish() debug log.
  *   Execute manually via Anonymous Apex:
  *   Database.executeBatch(new OnboardingReminderBatch(), 50);
+ *
  */
 public with sharing class OnboardingReminderBatch
         implements Database.Batchable<SObject>, Database.Stateful {
