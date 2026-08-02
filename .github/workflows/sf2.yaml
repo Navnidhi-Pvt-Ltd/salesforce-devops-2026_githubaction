@@ -1,4 +1,4 @@
-name: "Salesforce Pipeline Environment Test"
+name: "Salesforce Pipeline Environment"
 run-name: "Salesforce Pipeline Run"
 
 on:
