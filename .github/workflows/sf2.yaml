@@ -46,6 +46,14 @@ jobs:
                 results-artifact-name: salesforce-code-analyzer-results
                 github-token: ${{ github.token }}
 
+            - name: Fail on Critical/High Violations (All Files)
+                    if: |
+                      steps.run-code-analyzer.outputs.exit-code > 0 ||
+                      steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+                      steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
+                      steps.run-code-analyzer.outputs.num-violations > 10
+                    run: exit 1
+
             - name: "Authenticate with Salesforce"
               run: sf org login sfdx-url --sfdx-url-file tmp/authFIle.txt --set-default --alias TRIAL_PROD_ORG
             - name: "Deploy to Salesforce org"
