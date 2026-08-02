@@ -62,6 +62,7 @@ jobs:
                 SFDX_AUTH_FILE_PATH: ${{secrets.SFDX_AUTH_FILE_PATH}} 
               run: |
                 # Read the secret
+                echo $RUNNER_TEMP
                 echo ${{env.PROD_SFDX_AUTH_URL}}
                 echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
                 sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
