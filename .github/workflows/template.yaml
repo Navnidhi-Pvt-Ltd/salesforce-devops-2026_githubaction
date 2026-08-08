@@ -12,6 +12,7 @@ on:
         default: ubuntu-latest
       secrets:
        SLACK_WEBHOOK_URL:
+         type: string 
          required: false
 jobs:
   build:
