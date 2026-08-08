@@ -20,6 +20,7 @@ public with  sharing class OnboardingReminderBatch
     private static final Integer BATCH_SIZE = 50;
     private static final Integer REMINDER_DAYS = 3;
     private static final List<String> EXCLUDED_STATUSES = new List<String>{'Completed', 'Cancelled'};
+    private static final String TASK_SUBQUERY = '(SELECT Id FROM Onboarding_Tasks__r WHERE Is_Completed__c = FALSE)';
 
     // ─── start ────────────────────────────────────────────────────────────────
 
