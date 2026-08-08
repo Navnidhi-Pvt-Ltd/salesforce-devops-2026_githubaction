@@ -25,6 +25,7 @@ public with  sharing class OnboardingReminderBatch
                                   ' FROM Onboarding_Request__c' +
                                   ' WHERE Start_Date__c = :targetDate' +
                                   ' AND Status__c NOT IN :EXCLUDED_STATUSES';   
+    private Date targetDate = Date.today().addDays(REMINDER_DAYS);
 
     // ─── start ────────────────────────────────────────────────────────────────
 
