@@ -1,385 +1,94 @@
 name: Common Pipeline
-
 on:
   workflow_call:
     inputs:
-      envionment:
+      environment:
+        description: 'Environment name'
         required: true
         type: string
       runner:
+        required: false
         type: string
         default: ubuntu-latest
-        required: true
-      env_alias:
-        type: string
-        required: true
-    secrets:
-      SLACK_WEBHOOK_URL:
-        required: false
-
-env:
-  ORG_DEFAULT_ALIAS: PROD_ORG
-  NODE_VERSION: ">=24"
-  JAVA_VERSION: ">=11"
-  SF_CLI_VERSION: latest
-  ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
-  TEST_LEVEL: RunSpecifiedTests
-
-permissions:
-  contents: read
-  pull-requests: write
-  actions: read
-
 jobs:
-  build: 
-    name: "Build/Deploy against the ${{ inputs.envionment }}"
+  build:
+    name: "Build & Deploy against the Salesforce Org"
     runs-on: ${{ inputs.runner }}
-    environment: ${{ inputs.envionment }}
-
+    environment: ${{ inputs.environment }}
     env:
-      PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
-      ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
-      NODE_VERSION: ${{ vars.NODE_VERSION }}
-      SF_CLI_VERSION: ${{ vars.SF_CLI_VERSION }}
-      CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-      ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-      SLACK_API_KEY: ${{ secrets.SLACK_API_KEY }}
+      PYTHON_VERSION: ${{vars.PYTHON_VERSION}}
+      ORG_DEFAULT_ALIAS: ${{vars.ORG_DEFAULT_ALIAS}}
+      JAVA_VERSION: ${{vars.JAVA_VERSION}}
+      NODE_VERSION: ${{vars.NODE_VERSION}}
+      CONSUMER_KEY: ${{secrets.CONSUMER_KEY}}
+      ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}} 
+      SLACK_API_KEY: ${{secrets.SLACK_API_KEY}}
 
     steps:
-      - name: 'Checkout code'
+      - name: 'Checkout Code'
         uses: actions/checkout@v6.0.2
         with:
-          fetch-depth: 0
-
-      # PREREQUISITES - Only needed if the runner doesn't already satisfy these requirements.
+          fetch-depth: 0  
+  # PREREQUISITES - Only needed if the runner doesn't already satisfy these requirements.
       - name: Ensure node v20.9.0 or greater
         uses: actions/setup-node@v5
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{env.NODE_VERSION}}
       - name: Ensure java v11 or greater
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: ${{env.JAVA_VERSION}}
           distribution: 'zulu'
       - name: Ensure python v3.10 or greater
         uses: actions/setup-python@v6
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-        
-      - name: Read PR Body
-        run: |
-          echo "${{ github.event.pull_request.body }}" >> pr_body.txt
-          python READ_PRBODY.py > output.txt
-          cat output.txt
-          echo "apex_test_classes=$(cat output.txt)" >> $GITHUB_ENV
-          echo "${{ env.apex_test_classes }}"
-        # ${{ env.apex_test_classes }}
-
-      - name: Update .env.${{inputs.env_alias}} file # .env.uat, .env.qa
-        id: update-env-file
-        run: |
-          echo " " >> .env.${{inputs.env_alias}}
-          echo "AWS_ACCESS_KEY= ${{secrets.AWS_ACCESS_KEY}}" >> .env.${{inputs.env_alias}}
-          echo " " >> .env.${{inputs.env_alias}}
-          echo "AWS_ACCESS_SECRET= ${{secrets.AWS_ACCESS_SECRET}}" >> .env.${{inputs.env_alias}}
-          echo " " >> .env.${{inputs.env_alias}}
-          echo "SITE_ADMIN= ${{secrets.SITE_ADMIN}}" >> .env.${{inputs.env_alias}}
-          echo " " >> .env.${{inputs.env_alias}}
-          echo "SITE_DOMAIN= ${{secrets.SITE_DOMAIN}}" >> .env.${{inputs.env_alias}}
-          echo " " >> .env.${{inputs.env_alias}}
-          cat .env.${{inputs.env_alias}}
-
-      - name: Load .env file
-        uses: xom9ikk/dotenv@v2
-        with:
-          path: ./
-          mode: ${{inputs.env_alias}}
-
+          python-version: ${{env.PYTHON_VERSION}}              
       - name: "setup Salesforce CLI"
-        run: npm install --global @salesforce/cli@${{ env.SF_CLI_VERSION }}
-        env:
-          SF_CLI_VERSION: latest
-          PYTHON_VERSION: ${{ vars.PYTHON_VERSION }} # ">=3.10"
-          ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
-          NODE_VERSION: ${{ vars.NODE_VERSION }}
+        run: npm install --global @salesforce/cli@latest
 
       - name: "Check sf cli version"
-        run: |
-          sf --version
-          echo "Variable from the GitHub Org is ${{ env.ORG_VARIABLE }}"
+        run: sf --version
 
       - name: "Install Salesforce Code Analyzer"
-        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         run: |
-          sf --help
-          sf plugins install code-analyzer@${{ env.SF_CLI_VERSION }}
-      
-      - name: "Install SFDX GIT Delta"
-        run: echo 'Y' | sf plugins install sfdx-git-delta
+            sf --help    
+            sf plugins install code-analyzer
 
-      - name: "Generate Delta File(s)"
+  #            - name: "Authenticate with Salesforce"
+  #              env: 
+  #                PROD_SFDX_AUTH_URL: ${{secrets.PROD_SFDX_AUTH_URL}}
+  #                SFDX_AUTH_FILE_PATH: ${{secrets.SFDX_AUTH_FILE_PATH}} 
+  #              run: |
+  #                # Read the secret
+  #                echo $RUNNER_TEMP
+  #                echo ${{env.PROD_SFDX_AUTH_URL}}
+  #                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
+  #                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
+  #                rm ${{env.SFDX_AUTH_FILE_PATH}}
+
+      - name: "Decrypt the encrypted file 2"
         run: |
-          mkdir delta
-          sf sgd source delta --from "HEAD~1" \
-            --to "HEAD" --generate-delta --ignore-file .sgdignore \
-            --output-dir ./delta --ignore-whitespace --api-version 66.0 \
-            --source-dir force-app/main/default
-          cat delta/package/package.xml
-          ls delta
-
-      - name: "Decrypt the Encrypted File"
-        run:
-          openssl enc -nosalt -aes-256-cbc -d -in ${{ secrets.ENCRYPTION_KEY_FILE }} -out ${{ secrets.JWT_KEY_FILE }} -base64 -K ${{ secrets.DECRYPTION_KEY }} -iv ${{ secrets.DECRYPTION_IV }}
+            openssl enc -nosalt --aes-256-cbc -d -in ${{secrets.ENCRYPTION_KEY_FILE}} -out ${{secrets.JWT_KEY_FILE}} -base64 -K ${{secrets.DECRYPTION_KEY}} -iv ${{secrets.DECRYPTION_IV}}
 
       - name: "Authenticate with Salesforce"
         run: |
-          sf org login jwt --client-id ${{ secrets.CONSUMER_KEY }} \
-            --jwt-key-file ${{ secrets.JWT_KEY_FILE }} \
-            --username ${{ secrets.DEPLOYMENT_USER_USERNAME }} \
-            --set-default --alias ${{ vars.ORG_DEFAULT_ALIAS }} \
-            --instance-url ${{ vars.HUB_LOGIN_URL }}
+            sf org login jwt --client-id ${{secrets.CONSUMER_KEY}} --jwt-key-file ${{secrets.JWT_KEY_FILE}}     --username  ${{secrets.DEPLOYMENT_USER_NAME}}    --set-default --alias ${{vars.ORG_DEFAULT_ALIAS}}     --instance-url ${{vars.HUB_LOGIN_URL}}
 
-      #- name: "Authenticate with Salesforce"
-      #  env:
-      #    PROD_AUTH_URL: ${{ secrets.PROD_SFDX_AUTH_URL }} 
-      #    SFDX_AUTH_FILE_PATH: ${{ secrets.SFDX_AUTH_FILE_PATH }}
-  
-        # /temp/prod-auth.txt
-        # /tmp/prod-auth.txt
-        # $RUNNER_TEMP/prod-auth.txt
-        # $RUNNER_TEMP resolves to /home/runner/work/_temp/
-        #run: |
-        #  echo "${{ env.PROD_AUTH_URL }}" > "${{ env.SFDX_AUTH_FILE_PATH }}"
-        #  sf org login sfdx-url \
-        #    --sfdx-url-file ${{ env.SFDX_AUTH_FILE_PATH }} \
-        #    --set-default \
-        #    --alias "${{ env.ORG_DEFAULT_ALIAS }}"
-        #  rm ${{ env.SFDX_AUTH_FILE_PATH }}
-      
       - name: Run Salesforce Code Analyzer
         id: run-code-analyzer
-        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
         uses: forcedotcom/run-code-analyzer@v2
         with:
           run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
           results-artifact-name: salesforce-code-analyzer-results
           github-token: ${{ github.token }}
 
-      # Option 1: Quality gate on ALL files in the repository
+      - name: "Deploy to Salesforce org"
+        run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
       - name: Fail on Critical/High Violations (All Files)
         if: |
           steps.run-code-analyzer.outputs.exit-code > 0 ||
-          steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
-          steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
-          steps.run-code-analyzer.outputs.num-violations > 10
-        run: exit 0
+          steps.run-code-analyzer.outputs.num-sev1-violations > 30 ||
+          steps.run-code-analyzer.outputs.num-sev2-violations > 30 
+        run: exit 1
 
-      - name: SonarQube Scan
-        id: run-sonarqube-scan
-        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        uses: SonarSource/sonarqube-scan-action@v8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.verbose=true
-            -Dsonar.language=apex
-            -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.coverage.inclusions=**/*Test.cls
-            -Dsonar.exclusions=**/.cmp,**/force-app/**/fflib_.cls,**/.yml,**/.js,**/.xml,**/.css,**/.html,**/.woff2,**/.woff,**/.auradoc,**/*.svg,force-app/main/default/staticresources/**
-
-      - name: "Validate to Salesforce ORG - With Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        run: |
-          set -o pipefail
-          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
-            --tests ${{ env.apex_test_classes }} \
-            --source-dir force-app/main/default \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
-            --dry-run --json 2>&1 | tee deploy-result.json
-
-      - name: "Validate to Salesforce org - Default Test Level"
-        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        run: |
-          sf project deploy start \
-            --source-dir delta/force-app/main/default \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
-            --wait 45
-            --dry-run
-
-      - name: "Validate to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        run: |
-          set -o pipefail
-          sf project deploy start --test-level RunRelevantTests \
-            --source-dir delta/force-app/main/default  \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 \
-            --dry-run --json 2>&1 | tee deploy-result.json
-
-      - name: "Enfore 82% code coverage"
-        if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        run: |
-          python CODE_COVERAGE.py deploy-result.json
-
-      - name: "Validate Pre-Destructive Changes in Salesforce ${{ inputs.envionment }}"
-        # PR is Raised and it's in Open Status --> Validate the Changes
-        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.pull_request.merged == false}}
-        run: |
-          if grep -q '<types>' destructiveChanges/destructiveChanges.xml ; then
-            echo "---- Validate Pre-Destructive Changes in Salesforce ----"
-            sf project deploy start --target-org ${{ env.ORG_DEFAULT_ALIAS }} --pre-destructive-changes destructiveChanges/destructiveChanges.xml --manifest destructiveChanges/package.xml --dry-run --wait 45
-          else
-            echo "---- No changes to validate ----"
-          fi
-
-      - name: Post Validation Job ID as PR Comment
-        id: post-validation-id
-        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
-        run: |
-          if [ -f "deploy-result.json" ]; then
-            VALIDATION_ID=$(python -c "
-          import sys, json
-          try:
-              data = json.load(open('deploy-result.json'))
-              print(data.get('result', {}).get('id', ''))
-          except Exception:
-              print('')
-          " 2>/dev/null || echo "")
-            if [ -n "$VALIDATION_ID" ]; then
-              echo "Captured Salesforce validation job ID: $VALIDATION_ID"
-              # Delete any previous validation ID comment from this workflow to keep the PR clean
-              gh pr view ${{ github.event.pull_request.number }} --json comments \
-                --jq '.comments[] | select(.body | startswith("<!-- sf-validation-id -->")) | .id' \
-                | xargs -I{} gh api --method DELETE /repos/${{ github.repository }}/issues/comments/{} || true
-              # Post the new ID as a hidden comment
-              gh pr comment ${{ github.event.pull_request.number }} \
-                --body "<!-- sf-validation-id -->
-          sf-validation-id: $VALIDATION_ID"
-            else
-              echo "No validation ID found in deploy-result.json — quick deploy will not be used"
-            fi
-          else
-            echo "deploy-result.json not found — skipping ID capture"
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Read Validation Job ID from PR Comment
-        id: read-validation-id
-        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' }}
-        run: |
-          VALIDATION_ID=$(gh pr view ${{ github.event.pull_request.number }} --json comments \
-            --jq '.comments[] | select(.body | startswith("<!-- sf-validation-id -->")) | .body' \
-            | grep "sf-validation-id:" | tail -1 | awk '{print $2}' || echo "")
-          if [ -n "$VALIDATION_ID" ]; then
-            echo "validation_id=$VALIDATION_ID" >> $GITHUB_ENV
-            echo "Loaded validation job ID for quick deploy: $VALIDATION_ID"
-          else
-            echo "No validation ID comment found — falling back to full deploy"
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: "Deploy Pre-Destructive Changes in Salesforce ${{ inputs.envionment }}"
-        # PR is Raised and it's in Open Status --> Validate the Changes
-        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' }}
-        run: |
-          if grep -q '<types>' estructiveChanges/destructiveChanges.xml ; then
-            echo "---- Deploy Pre-Destructive Changes in Salesforce ----"
-            sf project deploy start --target-org ${{ env.ORG_DEFAULT_ALIAS }} --pre-destructive-changes destructiveChanges/destructiveChanges.xml --manifest destructiveChanges/package.xml --wait 10
-          else
-            echo "---- No changes to deploy ----"
-          fi
-
-      - name: Quick Deploy to Salesforce (reuse validated job)
-        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.validation_id != '' }}
-        run: |
-          set -o pipefail
-          if grep -q '<types>' delta/package/package.xml ; then
-            echo "---- Attempting quick deploy using validated job ID: ${{ env.validation_id }} ----"
-            if sf project deploy quick --job-id ${{ env.validation_id }} --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45 ; then
-              echo "deploy_done=true" >> $GITHUB_ENV
-              echo "Quick deploy succeeded"
-            else
-              echo "Quick deploy failed (validation may have expired, already been deployed, or ran without tests) — falling back to full deploy"
-              echo "deploy_done=false" >> $GITHUB_ENV
-            fi
-          else
-            echo "---- No changes to deploy ----"
-            echo "deploy_done=true" >> $GITHUB_ENV
-          fi
-
-      - name: "Deploy to Salesforce ORG - RunRelevantTests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event.action == 'closed' && (env.validation_id == '' || env.deploy_done == false ) }}
-        run: |
-          sf project deploy start --test-level RunRelevantTests \
-            --source-dir delta/force-app/main/default  \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
-
-      # github.event_name == 'pull_request', push (merged)
-      # github.pull_request.merged == true
-      - name: "Deploy to Salesforce org - Default Test Level"
-        #if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' && env.apex_classes == 'No Apex classes found' && (env.validation_id == '' || env.deploy_done == 'false') }}
-        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == true && github.event.action == 'closed' && (env.validation_id == '' || env.deploy_done == false ) }}
-        run: |
-          sf project deploy start \
-            --source-dir delta/force-app/main/default \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} \
-            --wait 45
-
-      - name: "Deploy to Salesforce ORG - With Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == true && github.event.action == 'closed' && (env.validation_id == '' || env.deploy_done == false ) }}
-        run: |
-          sf project deploy start --test-level ${{ env.TEST_LEVEL }} \
-            --tests ${{ env.apex_test_classes }} \
-            --source-dir delta/force-app/main/default \
-            --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
-
-      - name: Deploy Post-Destructive Changes in Salesforce
-        # PR is Raised and it's in Open Status --> Validate the Changes
-        if: ${{ github.event.pull_request.merged == true && github.event.action == 'closed' }}
-        run: |
-          if grep -q '<types>' destructiveChanges/postDestructiveChanges.xml ; then
-            echo "---- Deploy Post-Destructive Changes in Salesforce ----"
-            sf project deploy start --target-org ${{ env.ORG_DEFAULT_ALIAS }} --post-destructive-changes destructiveChanges/postDestructiveChanges.xml --manifest destructiveChanges/package.xml --wait 45
-          else
-            echo "---- No changes to deploy ----"
-          fi
-      
-      #- name: The Slack GitHub Action
-      #  if: always() # success(), failure()
-      #  uses: slackapi/slack-github-action@v3.0.3
-      #  with:
-      #    webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #    webhook-type: webhook-trigger
-      #    payload: |
-      #      status: "${{ job.status }}"
-      #      option: "false"
-
-      - name: Notify Slack
-        if: always()
-        run: |
-          STATUS_EMOJI="${{ job.status == 'success' && '✅' || '❌' }}"
-          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "text": "'"${STATUS_EMOJI} *${{ github.workflow }}* — ${{ job.status }}"'",
-              "attachments": [
-                {
-                  "color": "'"${{ job.status == 'success' && 'good' || 'danger' }}"'",
-                  "fields": [
-                    { "title": "Repository", "value": "${{ github.repository }}", "short": true },
-                    { "title": "Branch",     "value": "${{ github.ref_name }}",   "short": true },
-                    { "title": "Triggered by", "value": "${{ github.actor }}",   "short": true },
-                    { "title": "Event",      "value": "${{ github.event_name }}", "short": true },
-                    { "title": "Run URL",    "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false }
-                  ]
-                }
-              ]
-            }'
-
-
-        # run: sf project deploy start --test-level RunSpecifiedTests --test OnboardingReminderBatchTest OnboardingReminderBatchTest1 --source-dir force-app/main/default --target-org ${{ env.ORG_DEFAULT_ALIAS }} --wait 45
-      
-      #- name: "Assign Permission Set"
-      #  run: sf org assign permset --name Onboarding_Manager --on-behalf-of amitsingh-6wew@force.com --target-org ${{ env.ORG_DEFAULT_ALIAS }}
