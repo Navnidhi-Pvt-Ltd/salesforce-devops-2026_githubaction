@@ -18,6 +18,13 @@ public with  sharing class OnboardingReminderBatch
 
     private Integer processedCount = 0;
     private static final Integer BATCH_SIZE = 50;
+    private static final Integer REMINDER_DAYS = 3;
+    private static final List<String> EXCLUDED_STATUSES = new List<String>{'Completed', 'Cancelled'};
+    private static final String TASK_SUBQUERY = '(SELECT Id FROM Onboarding_Tasks__r WHERE Is_Completed__c = FALSE)';
+    private static final String QUERY = 'SELECT Id, Name, Employee_Name__c, Start_Date__c, Assigned_HR__c, Assigned_HR__r.Email, ' + TASK_SUBQUERY +
+                                  ' FROM Onboarding_Request__c' +
+                                  ' WHERE Start_Date__c = :targetDate' +
+                                  ' AND Status__c NOT IN :EXCLUDED_STATUSES';   
 
     // ─── start ────────────────────────────────────────────────────────────────
 
