@@ -17,6 +17,7 @@ public with  sharing class OnboardingReminderBatch
         implements Database.Batchable<SObject>, Database.Stateful {
 
     private Integer processedCount = 0;
+    private static final Integer BATCH_SIZE = 50;
 
     // ─── start ────────────────────────────────────────────────────────────────
 
