@@ -39,7 +39,7 @@ jobs:
   setup-salesforce:
       name: "Setup Salesforce Environment 2"
       runs-on: ubuntu-latest
-      environment: production
+      environment: dev
       env:
         PYTHON_VERSION: ${{vars.PYTHON_VERSION}}
         ORG_DEFAULT_ALIAS: ${{vars.ORG_DEFAULT_ALIAS}}
