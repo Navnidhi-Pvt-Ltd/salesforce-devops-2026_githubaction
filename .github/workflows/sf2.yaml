@@ -96,7 +96,7 @@ jobs:
 
             - name: "Authenticate with Salesforce"
               run: |
-                  sf org login jwt --client-id ${{secrets.CONSUMER_KEY}} --jwt-key-file ${{secrets.JWT_KEY_FILE}}     --username  ${{secrets.DEPLOYMENT_USER_NAME}}    --set-default --alias ${{vars.ORG_DEFAULT_ALIAS}}     --instance-url alias ${{vars.HUB_LOGIN_URL}}
+                  sf org login jwt --client-id ${{secrets.CONSUMER_KEY}} --jwt-key-file ${{secrets.JWT_KEY_FILE}}     --username  ${{secrets.DEPLOYMENT_USER_NAME}}    --set-default --alias ${{vars.ORG_DEFAULT_ALIAS}}     --instance-url ${{vars.HUB_LOGIN_URL}}
 
             - name: Run Salesforce Code Analyzer
               id: run-code-analyzer
