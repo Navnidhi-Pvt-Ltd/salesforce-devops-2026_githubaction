@@ -2,6 +2,7 @@ name: "Salesforce Pipeline Environment Test Variable"
 run-name: "Salesforce Pipeline Run"
 
 on:
+  workflow_dispatch: #Manual Run the pipeline
   push:
     paths: 
       - 'force-app/**'
