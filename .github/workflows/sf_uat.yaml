@@ -87,7 +87,7 @@ jobs:
 
             - name: "Decrypt the encrypted file 2"
               run: |
-                  openssl enc -nosalt --aes-256-cbc -d -in ${{secrets.ENCRYPTION_KEY_FILE}} -out ${{secrets.JWT_KEY_FILE}} -base64 -K ${{secrets.DECRYPTION_KEY}} -iv ${{secrets.DECRYPTION_IV}}
+                  openssl enc -nosalt --aes-256-cbc -d -in assets/uat/server.key.enc -out assets/uat/server.key -base64 -K DC6B703271AF84CBFF7A24B3F642AD58E07B91D83135310FD2120D7F7D332BD8 -iv 86A10B3569A447121F24977829AAA1C9
 
             - name: "Authenticate with Salesforce"
               run: |
@@ -113,4 +113,3 @@ jobs:
 
 #            - name: "Assign Permission Set"
 #             run: sf org assign permset --name Onboarding_Manager --on-behalf-of TRIAL_PROD_ORG --target-org TRIAL_PROD_ORG
-
