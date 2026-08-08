@@ -89,6 +89,7 @@ jobs:
 #                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
 #                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
 #                rm ${{env.SFDX_AUTH_FILE_PATH}}
+
             - name: "Decrypt the encrypted file 2"
               run: |
                   openssl enc -nosalt --aes-256-cbc -d -in assets/dev/server.key.enc -out assets/dev/server.key -base64 -K 4679453C950840E3D95A4A1926B75DF560F9979ADCB5D928881FCB8A75F71D22 -iv A41A41F1BB4713A85215DCCB3B1FF17D
