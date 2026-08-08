@@ -10,7 +10,7 @@ on:
     paths: 
       - 'force-app/**'
     branches:
-      - uat
+      - UAT
 
 env:
   ORG_DEFAULT_ALIAS: 'UAT_ORG'
