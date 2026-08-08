@@ -78,17 +78,24 @@ jobs:
                   sf --help    
                   sf plugins install code-analyzer
 
+#            - name: "Authenticate with Salesforce"
+#              env: 
+#                PROD_SFDX_AUTH_URL: ${{secrets.PROD_SFDX_AUTH_URL}}
+#                SFDX_AUTH_FILE_PATH: ${{secrets.SFDX_AUTH_FILE_PATH}} 
+#              run: |
+#                # Read the secret
+#                echo $RUNNER_TEMP
+#                echo ${{env.PROD_SFDX_AUTH_URL}}
+#                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
+#                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
+#                rm ${{env.SFDX_AUTH_FILE_PATH}}
+            - name: "Decrypt the encrypted file"
+              run: |   
+                  openssl enc -nosalt --aes-256-cbc -d -in ${{secrets.ENCRYPTION_KEY_FILE}} -out ${{secrets.JWT_KEY_FILE}} -base64 -K ${{secrets.DECRYPTION_KEY}} -iv ${{secrets.DECRYPTION_IV}}
+
             - name: "Authenticate with Salesforce"
-              env: 
-                PROD_SFDX_AUTH_URL: ${{secrets.PROD_SFDX_AUTH_URL}}
-                SFDX_AUTH_FILE_PATH: ${{secrets.SFDX_AUTH_FILE_PATH}} 
               run: |
-                # Read the secret
-                echo $RUNNER_TEMP
-                echo ${{env.PROD_SFDX_AUTH_URL}}
-                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
-                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
-                rm ${{env.SFDX_AUTH_FILE_PATH}}
+                  sf org login jwt --client-id ${{secrets.CONSUMER_KEY}} --jwt-key-file ${{secrets.JWT_KEY_FILE}}     --username  ${{secrets.DEPLOYMENT_USER_USERNAME}}    --set-default --alias ${{vars.ORG_DEFAULT_ALIAS}}     --instance-url alias ${{vars.HUB_LOGIN_URL}}
 
             - name: Run Salesforce Code Analyzer
               id: run-code-analyzer
