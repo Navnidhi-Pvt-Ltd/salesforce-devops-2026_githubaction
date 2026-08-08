@@ -10,10 +10,6 @@ on:
         required: false
         type: string
         default: ubuntu-latest
-      secrets:
-       SLACK_WEBHOOK_URL:
-         type: string 
-         required: false
 jobs:
   build:
     name: "Build & Deploy against the Salesforce Org"
