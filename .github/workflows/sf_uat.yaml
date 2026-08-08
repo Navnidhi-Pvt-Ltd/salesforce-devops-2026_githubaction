@@ -1,115 +1,26 @@
 name: "Salesforce UAT Pipeline"
-run-name: "Salesforce UAT Pipeline Run"
+run-name: "Salesforce Pipeline Run"
 
 on:
   workflow_dispatch: #Manual Run the pipeline
-  push:
-    paths: 
-      - 'force-app/**'
-    branches:
-      - UAT
   pull_request:
     types:
       - open
       - closed
-    paths:
+    paths: 
       - 'force-app/**'
     branches:
-      - UAT
+      - uat
 
 env:
-  ORG_DEFAULT_ALIAS: 'PROD_ORG'
+  ORG_DEFAULT_ALIAS: 'UAT_ORG'
   NODE_VERSION: '>=20.9.0'
   JAVA_VERSION: '>=11'
 jobs:
-  setup-salesforce-job-new:
-    name: "Setup Salesforce V2"
-    runs-on: ubuntu-latest 
-    steps:
-          - name: 'Print Environment variables'
-            run: |
-              echo $NODE_VERSION
-              echo $JAVA_VERSION
-              echo $ORG_DEFAULT_ALIAS
-  setup-salesforce:
-      name: "Setup Salesforce Environment 2"
-      runs-on: ubuntu-latest
-      environment: UAT
-      env:
-        PYTHON_VERSION: ${{vars.PYTHON_VERSION}}
-        ORG_DEFAULT_ALIAS: ${{vars.ORG_DEFAULT_ALIAS}}
-        NODE_VERSION: ${{vars.NODE_VERSION}}
-        CONSUMER_KEY: ${{secrets.CONSUMER_KEY}}
-        ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}} 
-        SLACK_API_KEY: ${{secrets.SLACK_API_KEY}}
-
-      steps:
-            - name: 'Checkout Code'
-              uses: actions/checkout@v6.0.2
-              with:
-                fetch-depth: 0  
-  # PREREQUISITES - Only needed if the runner doesn't already satisfy these requirements.
-            - name: Ensure node v20.9.0 or greater
-              uses: actions/setup-node@v5
-              with:
-                node-version: ${{env.NODE_VERSION}}
-            - name: Ensure java v11 or greater
-              uses: actions/setup-java@v5
-              with:
-                java-version: ${{env.JAVA_VERSION}}
-                distribution: 'zulu'
-            - name: Ensure python v3.10 or greater
-              uses: actions/setup-python@v6
-              with:
-                python-version: ${{env.PYTHON_VERSION}}              
-            - name: "setup Salesforce CLI"
-              run: npm install --global @salesforce/cli@latest
-
-            - name: "Check sf cli version"
-              run: sf --version
-
-            - name: "Install Salesforce Code Analyzer"
-              run: |
-                  sf --help    
-                  sf plugins install code-analyzer
-
-#            - name: "Authenticate with Salesforce"
-#              env: 
-#                PROD_SFDX_AUTH_URL: ${{secrets.PROD_SFDX_AUTH_URL}}
-#                SFDX_AUTH_FILE_PATH: ${{secrets.SFDX_AUTH_FILE_PATH}} 
-#              run: |
-#                # Read the secret
-#                echo $RUNNER_TEMP
-#                echo ${{env.PROD_SFDX_AUTH_URL}}
-#                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
-#                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
-#                rm ${{env.SFDX_AUTH_FILE_PATH}}
-
-            - name: "Decrypt the encrypted file 2"
-              run: |
-                  openssl enc -nosalt --aes-256-cbc -d -in assets/uat/server.key.enc -out assets/uat/server.key -base64 -K DC6B703271AF84CBFF7A24B3F642AD58E07B91D83135310FD2120D7F7D332BD8 -iv 86A10B3569A447121F24977829AAA1C9
-
-            - name: "Authenticate with Salesforce"
-              run: |
-                  sf org login jwt --client-id ${{secrets.CONSUMER_KEY}} --jwt-key-file ${{secrets.JWT_KEY_FILE}}     --username  ${{secrets.DEPLOYMENT_USER_NAME}}    --set-default --alias ${{vars.ORG_DEFAULT_ALIAS}}     --instance-url ${{vars.HUB_LOGIN_URL}}
-
-            - name: Run Salesforce Code Analyzer
-              id: run-code-analyzer
-              uses: forcedotcom/run-code-analyzer@v2
-              with:
-                run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
-                results-artifact-name: salesforce-code-analyzer-results
-                github-token: ${{ github.token }}
-
-            - name: "Deploy to Salesforce org"
-              run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
-
-            - name: Fail on Critical/High Violations (All Files)
-              if: |
-                steps.run-code-analyzer.outputs.exit-code > 0 ||
-                steps.run-code-analyzer.outputs.num-sev1-violations > 30 ||
-                steps.run-code-analyzer.outputs.num-sev2-violations > 30 
-              run: exit 1
-
-#            - name: "Assign Permission Set"
-#             run: sf org assign permset --name Onboarding_Manager --on-behalf-of TRIAL_PROD_ORG --target-org TRIAL_PROD_ORG
+  build-salesforce:
+      name: "Build & Validate"
+      uses: "./.github/workflows/template.yaml"
+      with:
+        environment: UAT
+        runner: macos-latest
+      secrets: inherit
