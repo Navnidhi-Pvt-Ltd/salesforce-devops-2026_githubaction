@@ -13,11 +13,12 @@ on:
 jobs:
   build:
     name: "Build & Deploy against the Salesforce Org"
-    runs-on: {{ inputs.runner }}
-    environment: {{ inputs.environment }}
+    runs-on: ${{ inputs.runner }}
+    environment: ${{ inputs.environment }}
     env:
       PYTHON_VERSION: ${{vars.PYTHON_VERSION}}
       ORG_DEFAULT_ALIAS: ${{vars.ORG_DEFAULT_ALIAS}}
+      JAVA_VERSION: ${{vars.JAVA_VERSION}}
       NODE_VERSION: ${{vars.NODE_VERSION}}
       CONSUMER_KEY: ${{secrets.CONSUMER_KEY}}
       ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}} 
