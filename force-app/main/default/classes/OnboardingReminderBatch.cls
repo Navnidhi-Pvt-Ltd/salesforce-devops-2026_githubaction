@@ -10,7 +10,7 @@
  *              across chunks and visible in the finish() debug log.
  *   Execute manually via Anonymous Apex:
  *   Database.executeBatch(new OnboardingReminderBatch(), 50);
- * change made 2
+ * change made 
  *
  */
 public with  sharing class OnboardingReminderBatch
