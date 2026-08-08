@@ -19,6 +19,7 @@ public with  sharing class OnboardingReminderBatch
     private Integer processedCount = 0;
     private static final Integer BATCH_SIZE = 50;
     private static final Integer REMINDER_DAYS = 3;
+    private static final List<String> EXCLUDED_STATUSES = new List<String>{'Completed', 'Cancelled'};
 
     // ─── start ────────────────────────────────────────────────────────────────
 
