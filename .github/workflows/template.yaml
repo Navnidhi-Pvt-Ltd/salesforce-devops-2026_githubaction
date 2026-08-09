@@ -91,8 +91,8 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: "Deploy to Salesforce org"
-#        run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
-        run: sf project deploy start --test-level RunSpecifiedTests --tests OnboardingReminderBatchTest  --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+        run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+#        run: sf project deploy start --test-level RunSpecifiedTests --tests OnboardingReminderBatchTest  --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
 
 
       - name: Fail on Critical/High Violations (All Files)
