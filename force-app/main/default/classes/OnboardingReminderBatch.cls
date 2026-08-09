@@ -33,6 +33,7 @@ public with  sharing class OnboardingReminderBatch
     private Integer emailRemaining = Limits.getEmailInvocations();
     private Integer emailUsed = Limits.getEmailInvocations() - emailRemaining;
     private Integer emailAvailable = emailLimit - emailUsed;
+    private Integer emailToSend = 0;
 
     // ─── start ────────────────────────────────────────────────────────────────
 
