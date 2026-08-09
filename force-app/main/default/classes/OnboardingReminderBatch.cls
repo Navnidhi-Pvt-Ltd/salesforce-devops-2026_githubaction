@@ -27,6 +27,7 @@ public with  sharing class OnboardingReminderBatch
                                   ' AND Status__c NOT IN :EXCLUDED_STATUSES';   
     private Date targetDate = Date.today().addDays(REMINDER_DAYS);
     private List<Onboarding_Request__c> requestsToProcess;
+    private List<Messaging.SingleEmailMessage> emailMessages;
 
     // ─── start ────────────────────────────────────────────────────────────────
 
