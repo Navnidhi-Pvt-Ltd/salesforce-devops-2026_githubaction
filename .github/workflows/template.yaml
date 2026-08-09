@@ -23,6 +23,7 @@ jobs:
       CONSUMER_KEY: ${{secrets.CONSUMER_KEY}}
       ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}} 
       SLACK_API_KEY: ${{secrets.SLACK_API_KEY}}
+      TEST_LEVEL: RunSpecifiedTests
 
     steps:
       - name: 'Checkout Code'
@@ -90,9 +91,17 @@ jobs:
           results-artifact-name: salesforce-code-analyzer-results
           github-token: ${{ github.token }}
 
-      - name: "Deploy to Salesforce org"
+      - name: "Deploy to Salesforce org - with Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' }}
+        run: sf project deploy start --test-level ${{env.TEST_LEVEL}} --tests {{env.apex_test_classes}}  --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
+      - name: "Deploy to Salesforce org - Run Relevant Tests"
+        if: ${{ env.apex_test_classes != 'RunRelevantTests' }}
+        run: sf project deploy start --test-level ${{env.apex_test_classes}}  --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
+      - name: "Deploy to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' }}
         run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
-#        run: sf project deploy start --test-level RunSpecifiedTests --tests OnboardingReminderBatchTest  --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
 
 
       - name: Fail on Critical/High Violations (All Files)
