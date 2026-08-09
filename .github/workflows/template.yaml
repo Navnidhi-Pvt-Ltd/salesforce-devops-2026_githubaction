@@ -9,7 +9,7 @@ on:
       runner:
         required: false
         type: string
-        default: ubuntu-latest
+        default: ubuntu-latestsf
 jobs:
   build:
     name: "Build & Deploy against the Salesforce Org"
@@ -62,6 +62,10 @@ jobs:
         run: |
             sf --help    
             sf plugins install code-analyzer
+      - name: "Install SFDX GIT Delta"
+        run: |
+            echo 'Y'| sf plugins install sfdx-git-delta
+
 
   #            - name: "Authenticate with Salesforce"
   #              env: 
