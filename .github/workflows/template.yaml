@@ -65,9 +65,6 @@ jobs:
       - name: "Install SFDX GIT Delta"
         run: |
             echo 'Y'| sf plugins install sfdx-git-delta
-      - name: "Install SFDX GIT Delta"
-        run: |
-            sf sgd source delta --to "HEAD"
       - name: "Generate Delta Files"
         run: |
             mkdir delta
