@@ -30,6 +30,7 @@ public with  sharing class OnboardingReminderBatch
     private List<Messaging.SingleEmailMessage> emailMessages;
     private Integer emailCount = 0;
     private Integer emailLimit = Limits.getLimitEmailInvocations();
+    private Integer emailRemaining = Limits.getEmailInvocations();
 
     // ─── start ────────────────────────────────────────────────────────────────
 
