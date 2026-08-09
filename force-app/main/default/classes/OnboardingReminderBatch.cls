@@ -29,6 +29,7 @@ public with  sharing class OnboardingReminderBatch
     private List<Onboarding_Request__c> requestsToProcess;
     private List<Messaging.SingleEmailMessage> emailMessages;
     private Integer emailCount = 0;
+    private Integer emailLimit = Limits.getLimitEmailInvocations();
 
     // ─── start ────────────────────────────────────────────────────────────────
 
