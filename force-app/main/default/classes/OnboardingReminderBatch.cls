@@ -28,6 +28,7 @@ public with  sharing class OnboardingReminderBatch
     private Date targetDate = Date.today().addDays(REMINDER_DAYS);
     private List<Onboarding_Request__c> requestsToProcess;
     private List<Messaging.SingleEmailMessage> emailMessages;
+    private Integer emailCount = 0;
 
     // ─── start ────────────────────────────────────────────────────────────────
 
