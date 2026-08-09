@@ -42,6 +42,7 @@ public with  sharing class OnboardingReminderBatch
     private Integer emailBatchCount = 0;
     private Integer emailBatchLimit = 10;
     private Integer emailBatchRemaining = 0;
+    private Integer emailBatchUsed = 0;
 
     // ─── start ────────────────────────────────────────────────────────────────
 
