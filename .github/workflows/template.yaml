@@ -9,7 +9,7 @@ on:
       runner:
         required: false
         type: string
-        default: ubuntu-latest
+        default: ubuntu-latestsf
 jobs:
   build:
     name: "Build & Deploy against the Salesforce Org"
@@ -62,6 +62,10 @@ jobs:
         run: |
             sf --help    
             sf plugins install code-analyzer
+      - name: "Install SFDX GIT Delta"
+        run: |
+            echo 'Y'| sf plugins install sfdx-git-delta
+
 
   #            - name: "Authenticate with Salesforce"
   #              env: 
@@ -72,7 +76,8 @@ jobs:
   #                echo $RUNNER_TEMP
   #                echo ${{env.PROD_SFDX_AUTH_URL}}
   #                echo ${{env.PROD_SFDX_AUTH_URL}}>${{env.SFDX_AUTH_FILE_PATH}}
-  #                sf org login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
+  #                sf o
+  rg login sfdx-url --sfdx-url-file ${{env.SFDX_AUTH_FILE_PATH}} --set-default --alias ${{env.ORG_DEFAULT_ALIAS}}
   #                rm ${{env.SFDX_AUTH_FILE_PATH}}
 
       - name: "Decrypt the encrypted file 2"
