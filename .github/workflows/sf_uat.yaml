@@ -7,10 +7,12 @@ on:
     types:
       - open
       - closed
+      - synchronize
     paths: 
       - 'force-app/**'
     branches:
       - UAT
+      - uat
 
 env:
   ORG_DEFAULT_ALIAS: 'UAT_ORG'
