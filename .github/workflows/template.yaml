@@ -140,11 +140,10 @@ jobs:
           steps.run-code-analyzer.outputs.num-sev2-violations > 30 
         run: exit 1
       - name: Slack Action Message
-        uses: hbfernandes/slack-action@1.1
+        uses: slackapi/slack-github-action@v4.0.0
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: webhook-trigger
           payload: |
-              status: "${{ job.status }}"
-              option: "false"
-
+            status: "${{ job.status }}"
+            option: "false"
