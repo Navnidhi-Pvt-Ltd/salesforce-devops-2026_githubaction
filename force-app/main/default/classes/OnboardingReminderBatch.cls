@@ -20,6 +20,29 @@ public with  sharing class OnboardingReminderBatch
     private static final Integer BATCH_SIZE = 50;
     private static final Integer REMINDER_DAYS = 3;
     private static final List<String> EXCLUDED_STATUSES = new List<String>{'Completed', 'Cancelled'};
+    private static final String TASK_SUBQUERY = '(SELECT Id FROM Onboarding_Tasks__r WHERE Is_Completed__c = FALSE)';
+    private static final String QUERY = 'SELECT Id, Name, Employee_Name__c, Start_Date__c, Assigned_HR__c, Assigned_HR__r.Email, ' + TASK_SUBQUERY +
+                                  ' FROM Onboarding_Request__c' +
+                                  ' WHERE Start_Date__c = :targetDate' +
+                                  ' AND Status__c NOT IN :EXCLUDED_STATUSES';   
+    private Date targetDate = Date.today().addDays(REMINDER_DAYS);
+    private List<Onboarding_Request__c> requestsToProcess;
+    private List<Messaging.SingleEmailMessage> emailMessages;
+    private Integer emailCount = 0;
+    private Integer emailLimit = Limits.getLimitEmailInvocations();
+    private Integer emailRemaining = Limits.getEmailInvocations();
+    private Integer emailUsed = Limits.getEmailInvocations() - emailRemaining;
+    private Integer emailAvailable = emailLimit - emailUsed;
+    private Integer emailToSend = 0;
+    private Integer emailSent = 0;
+    private Integer emailFailed = 0;
+    private Integer emailSkipped = 0;
+    private Integer emailTotal = 0;
+    private Integer emailBatchSize = 10;
+    private Integer emailBatchCount = 0;
+    private Integer emailBatchLimit = 10;
+    private Integer emailBatchRemaining = 0;
+    private Integer emailBatchUsed = 0;
 
     // ─── start ────────────────────────────────────────────────────────────────
 

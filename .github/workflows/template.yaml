@@ -9,7 +9,7 @@ on:
       runner:
         required: false
         type: string
-        default: ubuntu-latest
+        default: ubuntu-latestsf
 jobs:
   build:
     name: "Build & Deploy against the Salesforce Org"
@@ -23,6 +23,7 @@ jobs:
       CONSUMER_KEY: ${{secrets.CONSUMER_KEY}}
       ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}} 
       SLACK_API_KEY: ${{secrets.SLACK_API_KEY}}
+      TEST_LEVEL: RunSpecifiedTests
 
     steps:
       - name: 'Checkout Code'
@@ -43,6 +44,14 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{env.PYTHON_VERSION}}              
+      - name: Read PR Body
+        run: |
+          echo "${{github.event.pull_request.body}}" >> pr_body.txt
+          python READ_PRBODY.py > output.txt
+          cat output.txt
+          echo "apex_test_classes=$(cat output.txt)" >> $GITHUB_ENV
+          echo {{env.apex_test_classes}}
+
       - name: "setup Salesforce CLI"
         run: npm install --global @salesforce/cli@latest
 
@@ -53,6 +62,15 @@ jobs:
         run: |
             sf --help    
             sf plugins install code-analyzer
+      - name: "Install SFDX GIT Delta"
+        run: |
+            echo 'Y'| sf plugins install sfdx-git-delta
+      - name: "Generate Delta Files"
+        run: |
+            mkdir delta
+            sf sgd source delta --from "HEAD~1" --to "HEAD" --generate-delta --ignore-file .sgdignore --output-dir ./delta --ignore-whitespace --api-version 66.0 --source-dir force-app/main/default 
+            cat delta/package/package.xml
+            ls delta
 
   #            - name: "Authenticate with Salesforce"
   #              env: 
@@ -81,9 +99,38 @@ jobs:
           run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
           results-artifact-name: salesforce-code-analyzer-results
           github-token: ${{ github.token }}
+#gihub.event_name == ''
+      - name: "Validate to Salesforce org - with Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && env.apex_test_classes != 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: sf project deploy start --test-level ${{env.TEST_LEVEL}} --tests {{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45 --dry-run --json 2>&1 | tee deploy_result.json
 
-      - name: "Deploy to Salesforce org"
-        run: sf project deploy start --source-dir force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+      - name: "Validate to Salesforce org - Run Relevant Tests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: sf project deploy start --test-level ${{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45 --dry-run
+
+      - name: "Validate to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: sf project deploy start --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45 --dry-run
+
+      - name: "Enforce 82% Code Coverage"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
+        run: |
+          python CODE_COVERAGE.py deploy_result.json
+
+      - name: "Deploy to Salesforce org - with Specific Tests"
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && env.apex_test_classes != 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+        run: sf project deploy start --test-level ${{env.TEST_LEVEL}} --tests {{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
+
+      - name: "Deploy to Salesforce org - Run Relevant Tests"
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+        run: sf project deploy start --test-level ${{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
+
+      - name: "Deploy to Salesforce org - Default Test Level"
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+        run: sf project deploy start --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
+
 
       - name: Fail on Critical/High Violations (All Files)
         if: |

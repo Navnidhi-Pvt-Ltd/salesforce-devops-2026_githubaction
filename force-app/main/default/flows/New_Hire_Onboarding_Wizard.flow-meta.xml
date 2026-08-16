@@ -6,9 +6,6 @@
         <name>deptFinance</name>
         <choiceText>Finance</choiceText>
         <dataType>String</dataType>
-        <!-- <value>
-            <stringValue>Finance</stringValue>
-        </value> -->
         <value>
             <stringValue>Finance</stringValue>
         </value>

@@ -7,7 +7,7 @@ on:
     paths: 
       - 'force-app/**'
     branches:
-      - feature/**
+      - abc_feature/**
 
 env:
   ORG_DEFAULT_ALIAS: 'DEV_ORG'

@@ -37,3 +37,6 @@ iv =86A10B3569A447121F24977829AAA1C9
 
 openssl enc -nosalt --aes-256-cbc -in assets/uat/server.key -out assets/uat/server.key.enc -base64 -K DC6B703271AF84CBFF7A24B3F642AD58E07B91D83135310FD2120D7F7D332BD8 -iv 86A10B3569A447121F24977829AAA1C9
 openssl enc -nosalt --aes-256-cbc -d -in assets/uat/server.key.enc -out assets/uat/server.key -base64 -K DC6B703271AF84CBFF7A24B3F642AD58E07B91D83135310FD2120D7F7D332BD8 -iv 86A10B3569A447121F24977829AAA1C9
+
+sf sgd source delta --from "HEAD~1" --to "HEAD" --generate-delta --ignore-file .sgdignore --output-dir ./delta --ignore-whitespace --api-version 66.0 --source-dir force-app/main/default 
+sf project deploy start --test-level RunSpecifiedTests --tests OnboardingTriggerHandlerTest OnboardingReminderBatchTest  --source-dir delta/force-app/main/default --target-org UAT_INT_ORG --wait 45 --dry-run --json 2>&1 | tee deploy_result.json
