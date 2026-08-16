@@ -142,4 +142,4 @@ jobs:
       - name: Slack Action Message
         if: always()
         run: |
-         curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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
+         curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' ${{secrets.SLACK_WEBHOOK_URL}}
