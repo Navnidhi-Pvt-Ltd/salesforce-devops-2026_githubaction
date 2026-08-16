@@ -140,10 +140,6 @@ jobs:
           steps.run-code-analyzer.outputs.num-sev2-violations > 30 
         run: exit 1
       - name: Slack Action Message
-        uses: slackapi/slack-github-action@v4.0.0
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: webhook-trigger
-          payload: |
-            status: "${{ job.status }}"
-            option: "false"
+        if: always()
+        run: |
+         curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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
