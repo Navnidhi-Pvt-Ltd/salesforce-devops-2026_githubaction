@@ -139,7 +139,7 @@ jobs:
           steps.run-code-analyzer.outputs.num-sev1-violations > 30 ||
           steps.run-code-analyzer.outputs.num-sev2-violations > 30 
         run: exit 1
-      - name: Slack Action
+      - name: Slack Action Message
         uses: hbfernandes/slack-action@1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -147,3 +147,4 @@ jobs:
           payload: |
               status: "${{ job.status }}"
               option: "false
+
