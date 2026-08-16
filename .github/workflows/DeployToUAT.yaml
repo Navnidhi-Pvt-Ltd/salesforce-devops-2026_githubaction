@@ -2,35 +2,23 @@ name: "Salesforce UAT Deployment Pipeline"
 run-name: "Salesforce UAT Deployment Pipeline"
 
 on:
-  pull_request:
-    types:
-      - closed
-    paths:
+  workflow_dispatch: #Manual Run the pipeline
+  push:
+    paths: 
       - 'force-app/**'
     branches:
       - UAT
       - uat
 
-permissions:
-  contents: read
-  pull-requests: write
-  actions: read
-
 env:
-  ORG_DEFAULT_ALIAS: UAT_ORG
-  NODE_VERSION: ">=20.9.0"
-  JAVA_VERSION: ">=11"
-  SF_CLI_VERSION: latest
-  ORG_VARIABLE: ${{ vars.ORGANIZATION_VARIABLE }}
-
+  ORG_DEFAULT_ALIAS: 'UAT_ORG'
+  NODE_VERSION: '>=20.9.0'
+  JAVA_VERSION: '>=11'
 jobs:
-  build-salesforce: 
-    name: "Build & Validate"
-    uses: "./.github/workflows/template.yaml"
-    with:
-      envionment: UAT
-      runner: macos-latest
-      env_alias: uat
-    secrets: inherit
-    #secrets: 
-    #  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  build-salesforce:
+      name: "Build & Validate"
+      uses: "./.github/workflows/template.yaml"
+      with:
+        environment: UAT
+        runner: macos-latest
+      secrets: inherit

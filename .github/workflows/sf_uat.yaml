@@ -6,7 +6,7 @@ on:
   pull_request:
     types:
       - opened
-      - closed
+#      - closed
       - synchronize
     paths: 
       - 'force-app/**'
