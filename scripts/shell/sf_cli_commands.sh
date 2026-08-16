@@ -179,8 +179,10 @@ sh scripts/shell/setup-scratch-org.sh  \
   --definition config/project-scratch-def.json
 
 ### help
-sh scripts/shell/setup-scratch-org.sh --help
+sh scripts/shell/setup-scratch-org.sh --helpcurl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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
 
 
 ### help
 sh scripts/shell/retrieve_metadata_batches.sh --help
+
+curl -X POST -H 'Content-type: application/json' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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
