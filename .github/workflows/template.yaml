@@ -118,17 +118,17 @@ jobs:
           python CODE_COVERAGE.py deploy_result.json
 
       - name: "Deploy to Salesforce org - with Specific Tests"
-        if: ${{ env.apex_test_classes != 'No Apex classes found' && env.apex_test_classes != 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+        if: ${{ env.apex_test_classes != 'No Apex classes found' && env.apex_test_classes != 'RunRelevantTests' && github.event_name == 'push' }}
         run: sf project deploy start --test-level ${{env.TEST_LEVEL}} --tests {{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
 
 
       - name: "Deploy to Salesforce org - Run Relevant Tests"
-        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+        if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event_name == 'push' }}
         run: sf project deploy start --test-level ${{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
 
 
       - name: "Deploy to Salesforce org - Default Test Level"
-        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event.pull_request.merged == true && github.event_name == 'pull_request' }}
+        if: ${{ env.apex_test_classes == 'No Apex classes found' && github.event_name == 'push' }}
         run: sf project deploy start --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45
 
 
