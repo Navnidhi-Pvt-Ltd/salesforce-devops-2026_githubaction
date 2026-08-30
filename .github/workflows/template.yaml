@@ -24,6 +24,10 @@ jobs:
       ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}} 
       SLACK_API_KEY: ${{secrets.SLACK_API_KEY}}
       TEST_LEVEL: RunSpecifiedTests
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
 
     steps:
       - name: 'Checkout Code'
