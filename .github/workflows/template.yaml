@@ -105,7 +105,7 @@ jobs:
       - name: SonarQube Scan
         id: run-sonarqube-scan
         if: ${{ github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        uses: SonarSource/sonarqube-scan-action@@v8.2.1
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
