@@ -53,6 +53,7 @@ public with  sharing class OnboardingReminderBatch
     private Integer test8 = 0;
     private Integer test9 = 0;
     private Integer test10 = 0;
+    private Integer test11 = 0;
 
     // ─── start ────────────────────────────────────────────────────────────────
 
