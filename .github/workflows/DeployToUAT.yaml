@@ -3,7 +3,9 @@ run-name: "Salesforce UAT Deployment Pipeline"
 
 on:
   workflow_dispatch: #Manual Run the pipeline
-  push:
+  pull_request:
+    types: 
+      - closed
     paths: 
       - 'force-app/**'
     branches:
