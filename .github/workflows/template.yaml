@@ -122,7 +122,9 @@ jobs:
           
       - name: "Validate to Salesforce org - with Specific Tests"
         if: ${{ env.apex_test_classes != 'No Apex classes found' && env.apex_test_classes != 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
-        run: sf project deploy start --test-level ${{env.TEST_LEVEL}} --tests {{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45 --dry-run --json 2>&1 | tee deploy_result.json
+        run: |
+			sf project deploy start --test-level ${{env.TEST_LEVEL}} --tests {{env.apex_test_classes}}  --source-dir delta/force-app/main/default --target-org ${{env.ORG_DEFAULT_ALIAS}} --wait 45 --dry-run --json 2>&1 | tee deploy_result.json
+			echo "test"
 
       - name: "Validate to Salesforce org - Run Relevant Tests"
         if: ${{ env.apex_test_classes == 'RunRelevantTests' && github.event.pull_request.merged == false && github.event_name == 'pull_request' }}
