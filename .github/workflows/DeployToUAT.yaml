@@ -3,7 +3,7 @@ run-name: "Salesforce UAT Deployment Pipeline"
 
 on:
   workflow_dispatch: #Manual Run the pipeline
-  PULL_REQUEST:
+  pull_request:
     types: 
       - closed
     paths: 
