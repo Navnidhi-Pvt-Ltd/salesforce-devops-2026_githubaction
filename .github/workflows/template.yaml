@@ -140,15 +140,19 @@ jobs:
         id: post-validation-id
         if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
         run: |
-          if [ -f "deploy-result.json" ]; then
+          if [ -f "deploy_result.json" ]; then
             VALIDATION_ID=$(python -c "
-          import sys, json
-          try:
-              data = json.load(open('deploy-result.json'))
-              print(data.get('result', {}).get('id', ''))
-          except Exception:
-              print('')
-          " 2>/dev/null || echo "")
+                import sys, json
+                try:
+                    data = json.load(open('deploy_result.json'))
+                    print(data.get('result', {}).get('id', ''))
+                except Exception as inst:
+                    print('Inside exception')
+                    print(type(inst))
+                    print(inst.args)
+                    print(inst)
+                " 2>/dev/null || echo "")
+
             if [ -n "$VALIDATION_ID" ]; then
               echo "Captured Salesforce validation job ID: $VALIDATION_ID"
               # Delete any previous validation ID comment from this workflow to keep the PR clean
