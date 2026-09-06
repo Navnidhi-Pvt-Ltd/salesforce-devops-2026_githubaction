@@ -72,7 +72,7 @@ jobs:
       - name: "Generate Delta Files"
         run: |
             mkdir delta
-            sf sgd source delta --from "HEAD~1" --to "HEAD" --generate-delta --ignore-file .sgdignore --output-dir ./delta --ignore-whitespace --api-version 66.0 --source-dir force-appin/default 
+            sf sgd source delta --from "HEAD~1" --to "HEAD" --generate-delta --ignore-file .sgdignore --output-dir ./delta --ignore-whitespace --api-version 66.0 --source-dir force-app/main/default 
             cat delta/package/package.xml
             ls delta
 
