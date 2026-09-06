@@ -29,5 +29,5 @@ jobs:
       uses: "./.github/workflows/template.yaml"
       with:
         environment: UAT
-        runner: macos-latest
+        runner: ubuntu-latest
       secrets: inherit
